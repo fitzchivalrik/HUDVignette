@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <LangVersion>9</LangVersion>
-    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <Authors>Chivalrik</Authors>
     <Company>Chivalrik</Company>
     <Nullable>enable</Nullable>

@@ -75,9 +75,12 @@ namespace HUDVignette
                 "Start Blood Vignette when health under %d %%");
             var currentSelectedBloodOverlay = (int)config.SelectedOverlay;
             changed |= ImGui.RadioButton("Simple Blood Vignette", ref currentSelectedBloodOverlay, 0);
-            ImGui.SameLine();
+            ImGui.SameLine(250f * scale);
             changed |= ImGui.RadioButton("Fancy Blood Vignette", ref currentSelectedBloodOverlay, 1);
             if (changed) config.SelectedOverlay = (BloodOverlay) currentSelectedBloodOverlay;
+            changed |= ImGui.DragFloat2("UV Min", ref config.UVMin, 0.005f, -1, 1, "%.3f", ImGuiSliderFlags.AlwaysClamp);
+            changed |= ImGui.DragFloat2("UV Max", ref config.UVMax, 0.005f, -1, 1, "%.3f", ImGuiSliderFlags.AlwaysClamp);
+            changed |= ImGui.DragInt("Max Alpha", ref config.MaxAlpha,1, 0, 255, "%d", ImGuiSliderFlags.AlwaysClamp);
             ImGui.PopItemWidth();
             ImGui.Unindent();
             

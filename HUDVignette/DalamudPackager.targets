@@ -7,6 +7,6 @@
                 AssemblyName="$(AssemblyName)"
                 MakeZip="true"
                 VersionComponents="3"
-                Exclude="Dogwalk.pdb"/>
+                Exclude="HUDVignette.pdb"/>
     </Target>
 </Project>

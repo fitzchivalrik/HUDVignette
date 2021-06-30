@@ -38,7 +38,10 @@ namespace HUDVignette
         private TextureWrap _bloodOverlay7he1ndigo;
         private TextureWrap _selectedOverlay = null!;
         private float _startHealth = 0.8f;
-        
+        private Vector2 _uvMin;
+        private Vector2 _uvMax;
+        private int _maxAlpha;
+
         public HUDVignette(DalamudPluginInterface pi, Configuration config)
         {
             
@@ -67,10 +70,10 @@ namespace HUDVignette
 
             #endregion
             
-            _bloodOverlayCC0 = _pluginInterface.UiBuilder.LoadImage(
-                Path.Combine(PluginBridge.AssemblyLocation, "/res/BloodOverlay.png"));
-            _bloodOverlay7he1ndigo = _pluginInterface.UiBuilder.LoadImage(
-                Path.Combine(PluginBridge.AssemblyLocation, "/res/BloodVignette_Deviantart_7he1ndigo.png"));
+            _bloodOverlayCC0 = _pluginInterface.UiBuilder.LoadImageRaw(
+                ReadEmbedded("HUDVignette.res.BloodOverlay.rgba"), 1280, 800, 4);
+            _bloodOverlay7he1ndigo = _pluginInterface.UiBuilder.LoadImageRaw(
+                ReadEmbedded("HUDVignette.res.BloodVignette_Deviantart_7he1ndigo.rgba"), 960, 540, 4);
 
             pi.CommandManager.AddHandler(Command, new CommandInfo((_, args) =>
             {
@@ -79,14 +82,17 @@ namespace HUDVignette
                     case "toggle":
                         config.Enabled ^= true;
                         SetupOverlay();
+                        _pluginInterface.SavePluginConfig(_config);
                         break;
                     case "on":
                         config.Enabled = true;
                         SetupOverlay();
+                        _pluginInterface.SavePluginConfig(_config);
                         break;
                     case "off":
                         config.Enabled = false;
                         SetupOverlay();
+                        _pluginInterface.SavePluginConfig(_config);
                         break;
                     default:
                         OnOpenConfigUi(null!, null!);
@@ -107,10 +113,16 @@ namespace HUDVignette
             )
             {
                  OnLogin(null!, null!);
-                _buildingConfigUi = true;
-                _pluginInterface.UiBuilder.OnBuildUi += BuildConfigUi;
             }
 #endif
+        }
+
+        private static byte[] ReadEmbedded(string qualifiedName)
+        {
+            using var s = Assembly.GetExecutingAssembly().GetManifestResourceStream(qualifiedName);
+            using var ms = new MemoryStream();
+            s?.CopyTo(ms);
+            return ms.ToArray();
         }
         
         private void OnLogout(object sender, EventArgs e)
@@ -136,6 +148,9 @@ namespace HUDVignette
                 _ => throw new ArgumentOutOfRangeException()
             };
             _startHealth = _config.StartHealthPercentage / 100f;
+            _uvMin = _config.UVMin;
+            _uvMax = _config.UVMax;
+            _maxAlpha = _config.MaxAlpha;
             if(_config.Enabled) _pluginInterface.UiBuilder.OnBuildUi += BuildOverlay;
         }
 
@@ -168,15 +183,14 @@ namespace HUDVignette
             if (player is null) return;
             var healthPercentage = (float)player.CurrentHp / player.MaxHp;
             if (healthPercentage > _startHealth) return;
-            var alpha = (int)(204 * (1f - healthPercentage));
-            var color =(uint) (alpha << 24) | 0xFFFFFF;
+            var alpha = (int)(_maxAlpha * (1f - healthPercentage));
             drawlist.AddImage(
                 _selectedOverlay.ImGuiHandle,
                 Vector2.Zero, 
                 new Vector2(ImGuiHelpers.MainViewport.Size.X, ImGuiHelpers.MainViewport.Size.Y),
-                Vector2.Zero,
-                Vector2.One,
-                color
+                _uvMin,
+                _uvMax,
+                (uint) (alpha << 24) | 0xFFFFFF
             );
             drawlist.PopClipRect();
             ImGui.End();
@@ -212,9 +226,9 @@ namespace HUDVignette
                     _selectedOverlay.ImGuiHandle,
                     Vector2.Zero, 
                     new Vector2(ImGuiHelpers.MainViewport.Size.X, ImGuiHelpers.MainViewport.Size.Y),
-                    Vector2.Zero,
-                    Vector2.One,
-                    0xA0FFFFFF
+                    _uvMin,
+                    _uvMax,
+                    (uint) (_maxAlpha << 24) | 0xFFFFFF
                 );
                 drawlist.PopClipRect();
                 ImGui.End();

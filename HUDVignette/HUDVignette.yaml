@@ -1,5 +1,5 @@
 ﻿name: HUD Vignette
 author: Chivalrik
 description: |-
-  Draws a vignette on screen when HP/MP is low.
+  Draws a vignette on screen when HP is low.
 repo_url: https://github.com/fitzchivalrik/hudvignette
